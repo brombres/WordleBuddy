@@ -86,7 +86,7 @@ class WordleBuddy
         print_result( word, word )
       else
         println "Unable to find a solution."
-        println "Either there was an input error or the Wordle Buddy word is out of date."
+        println "Either there was an input error or the Wordle Buddy word list is out of date."
       endIf
 
     method accept_input( input:String )->Logical
