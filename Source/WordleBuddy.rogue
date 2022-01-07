@@ -41,7 +41,9 @@ class WordleBuddy
       endIf
 
       if (command//list)
-        list( command//pattern )
+        local letters : String
+        if (command//letters) letters = command//letters->String
+        list( command//pattern, letters )
 
       elseIf (command//game)
         Game( &solver=command//solver? ).play
@@ -51,9 +53,12 @@ class WordleBuddy
 
       endIf
 
-    method list( pattern:String )
+    method list( pattern:String, letters:String )
       local gamestate = GameState()
       gamestate.filter( pattern )
+      if (letters)
+        gamestate.candidates.remove_words_not_containing( forEach in letters.to_lowercase )
+      endIf
       println (forEach in gamestate.candidates)
 
     method parse_args( args:String[] )->Value
@@ -61,13 +66,20 @@ class WordleBuddy
         necessary (args.count)
 
         if (args.first == "list")
-          necessary (args.count == 2)
-          local pattern = args.last
+          necessary (args.count == 2 or args.count == 4)
+          local pattern = args[1]
           if (pattern.count != 5)
             println ''Pattern must contain 5 characters; "$" contains $ characters.''(pattern,pattern.count)
             return UndefinedValue
           endIf
-          return @{ list:true, :pattern }
+
+          local result = @{ list:true, :pattern }
+          if (args.count == 4)
+            necessary (args[2] == "containing")
+            result//letters = args[3]
+          endIf
+
+          return result
         endIf
 
         local result = @{}
@@ -98,6 +110,7 @@ class WordleBuddy
                |  wordlebuddy game
                |  wordlebuddy game solver
                |  wordlebuddy list <pattern>
+               |  wordlebuddy list <pattern> containing <letters>
                |
                |DESCRIPTION
                |  wordlebuddy solver
@@ -117,11 +130,20 @@ class WordleBuddy
                |      A - Match words with an 'A' at this position.
                |      a - Match words with an 'A' NOT at this position.
                |
-               |EXAMPLE
+               |  wordlebuddy list "<pattern>" containing <letters>
+               |    Lists words matching the pattern (which can be "*****") AND
+               |    containing all the given letters.
+               |
+               |
+               |EXAMPLES
                |  wordlebuddy list "r*O*T"
                |    # List words that have 'O' in the middle, end in 'T', and
                |    # contain an 'R' but don't start with it.
                |
+               |  wordlebuddy list "*O**c" containing tu
+               |    # List words that have O as the second letter, contain 'C'
+               |    # but not as the last letter, and contain the letters 'T'
+               |    # and 'U' anywhere.
 
 endClass
 

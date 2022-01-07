@@ -29,7 +29,8 @@ Wordle Buddy is a console-based app that assists in solving [Wordle](https://pow
       wordlebuddy solver
       wordlebuddy game
       wordlebuddy game solver
-      wordlebuddy list <pattern> [containing <letters>]
+      wordlebuddy list <pattern>
+      wordlebuddy list "<pattern>" containing <letters>
 
     DESCRIPTION
       wordlebuddy solver
@@ -49,10 +50,19 @@ Wordle Buddy is a console-based app that assists in solving [Wordle](https://pow
           A - Match words with an 'A' at this position.
           a - Match words with an 'A' NOT at this position.
 
-    EXAMPLE
-      wordlebuddy list r*O*T
-        # List words that have 'O' in the middle, end in 'T', and
-        # contain an 'R' but don't start with it.
+        wordlebuddy list "<pattern>" containing <letters>
+          Lists words matching the pattern (which can be "*****") AND
+          containing all the given letters.
+
+      EXAMPLES
+        wordlebuddy list "r*O*T"
+          # List words that have 'O' in the middle, end in 'T', and
+          # contain an 'R' but don't start with it.
+
+        wordlebuddy list "*O**c" containing tu
+          # List words that have O as the second letter, contain 'C'
+          # but not as the last letter, and contain the letters 'T'
+          # and 'U' anywhere.
 
 # Thanks
 - [Wordle](https://powerlanguage.co.uk/wordle/) for a fun game.
