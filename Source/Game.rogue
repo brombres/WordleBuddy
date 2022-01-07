@@ -25,9 +25,11 @@ class Game( &solver )
 
     method choose_word( solutions:WordList, disambiguations:WordList )->String
       if (not solver)
+        gamestate.show_used_letters
         println "Enter your next guess."
         local word = Console.input( "> " )
         if (word == "") return null
+        if (word == "q" or word == "quit") System.exit
         if (word.count != 5)
           println "Your guess must be a 5-letter word."
           return null
@@ -36,6 +38,7 @@ class Game( &solver )
       endIf
 
       if (solutions.count == 1)
+        gamestate.show_used_letters
         Console.input( "Press RETURN to see the answer > " )
         return solutions.first
       endIf
@@ -52,6 +55,7 @@ class Game( &solver )
         left .= left_justified(24)
         println left + right
       endForEach
+      gamestate.show_used_letters
 
       local word = Console.input( "> " ).to_lowercase
       if (word == "q" or word == "quit") System.exit

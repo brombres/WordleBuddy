@@ -53,6 +53,8 @@ class Solver
       println "Solved in # guess".pluralized(guesses)
 
     method choose_word( solutions:WordList, disambiguations:WordList )->String
+      gamestate.show_used_letters
+
       if (solutions.count == 1)
         Console.input( "Press RETURN to see the answer > " )
         return "$ $" (solutions.first,solutions.first.to_uppercase)

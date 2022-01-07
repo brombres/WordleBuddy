@@ -2,6 +2,7 @@ class GameState
   PROPERTIES
     solution          : String
     candidates        = MainDictionary.cloned : WordList
+    fixed_letters     = Letters()
     known_letters     = Letters()
     incorrect_letters = Letters()
 
@@ -13,6 +14,29 @@ class GameState
     method init( &unknown_solution )
       if (not unknown_solution) solution = candidates.random
 
+    method show_used_letters
+      forEach (ch in 'a'..'z')
+        if (ch > 'a') print ' '
+        if (fixed_letters.contains(ch))
+          ConsoleStyle.fg_white
+          ConsoleStyle.bg_green
+          print ch.to_uppercase
+        elseIf (known_letters.contains(ch))
+          ConsoleStyle.fg_black
+          ConsoleStyle.bg_yellow
+          print ch.to_uppercase
+        elseIf (incorrect_letters.contains(ch))
+          print " "
+        else
+          ConsoleStyle.fg_default
+          ConsoleStyle.bg_default
+          print ch.to_uppercase
+        endIf
+        ConsoleStyle.bg_default
+      endForEach
+      println
+      ConsoleStyle.fg_default
+
     method refine_candidates( word:String, score:String )
       local guess_letters = Letters()
 
@@ -22,6 +46,7 @@ class GameState
           guess_letters.add( ch )
           known_letters.add( ch )
           if (score[i] == ch.to_uppercase)
+            fixed_letters.add( ch )
             candidates.discard( (word) with (i,ch) => word[i] != ch )
           elseIf (score[i] == ch.to_lowercase)
             candidates.discard( (word) with (i,ch) => word[i] == ch )
