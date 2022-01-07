@@ -33,27 +33,95 @@ class WordleBuddy
   #   https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
   METHODS
     method init( args:String[] )
-      local game = false
-      local solver = false
-      if (args.contains("game"))   game = true;   args.remove("game")
-      if (args.contains("solver")) solver = true; args.remove("solver")
+      local command = parse_args( args )
 
-      if (args.count or (not game and not solver))
+      if (command.is_undefined)
         print_usage
         System.exit 0
       endIf
 
-      if (game)
-        Game(&=solver).play
+      if (command//list)
+        list( command//pattern )
+
+      elseIf (command//game)
+        Game( &solver=command//solver? ).play
+
       else
         Solver().play
+
       endIf
 
+    method list( pattern:String )
+      local gamestate = GameState()
+      gamestate.filter( pattern )
+      println (forEach in gamestate.candidates)
+
+    method parse_args( args:String[] )->Value
+      contingent
+        necessary (args.count)
+
+        if (args.first == "list")
+          necessary (args.count == 2)
+          local pattern = args.last
+          if (pattern.count != 5)
+            println ''Pattern must contain 5 characters; "$" contains $ characters.''(pattern,pattern.count)
+            return UndefinedValue
+          endIf
+          return @{ list:true, :pattern }
+        endIf
+
+        local result = @{}
+        if (args.contains("game"))
+          args.remove( "game" )
+          result//game = true
+        endIf
+
+        if (args.contains("solver"))
+          args.remove( "solver" )
+          result//solver = true
+        endIf
+
+        necessary (args.is_empty)
+        return result
+
+      unsatisfied
+        return UndefinedValue
+
+      endContingent
+
     method print_usage
+      println VERSION
+      println AUTHOR
+      println
       println @|USAGE
-               |  wordlebuddy game
                |  wordlebuddy solver
-               |  wordlebuddy solver game
+               |  wordlebuddy game
+               |  wordlebuddy game solver
+               |  wordlebuddy list <pattern>
+               |
+               |DESCRIPTION
+               |  wordlebuddy solver
+               |    Interactively assists in solving an online Wordle puzzle.
+               |
+               |  wordlebuddy game
+               |    Plays a Wordle game without solver assistance.
+               |
+               |  wordlebuddy game solver
+               |    Plays a Wordle game with solver assistance.
+               |
+               |  wordlebuddy list "<pattern>"
+               |    List possible words that match the given 5-character pattern.
+               |
+               |    <pattern>
+               |      * - Match words with any character at this position.
+               |      A - Match words with an 'A' at this position.
+               |      a - Match words with an 'A' NOT at this position.
+               |
+               |EXAMPLE
+               |  wordlebuddy list "r*O*T"
+               |    # List words that have 'O' in the middle, end in 'T', and
+               |    # contain an 'R' but don't start with it.
+               |
 
 endClass
 

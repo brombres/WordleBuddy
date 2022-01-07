@@ -34,7 +34,7 @@ class Game( &solver )
           println "Your guess must be a 5-letter word."
           return null
         endIf
-        return word
+        return word.to_lowercase
       endIf
 
       if (solutions.count == 1)

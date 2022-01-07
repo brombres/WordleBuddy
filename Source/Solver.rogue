@@ -91,6 +91,8 @@ class Solver
         endIf
       endIf
 
+      word .= to_lowercase
+
       if (word.count != 5)
         println "Your guess must be a number 1..$ or a 5-letter word." (solutions.count + disambiguations.count)
         return null

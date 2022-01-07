@@ -24,7 +24,35 @@ Wordle Buddy is a console-based app that assists in solving [Wordle](https://pow
     morlock update wordlebuddy
 
 # Usage
-    wordlebuddy
+
+    USAGE
+      wordlebuddy solver
+      wordlebuddy game
+      wordlebuddy game solver
+      wordlebuddy list <pattern> [containing <letters>]
+
+    DESCRIPTION
+      wordlebuddy solver
+        Interactively assists in solving an online Wordle puzzle.
+
+      wordlebuddy game
+        Plays a Wordle game without solver assistance.
+
+      wordlebuddy game solver
+        Plays a Wordle game with solver assistance.
+
+      wordlebuddy list <pattern>
+        List possible words that match the given 5-character pattern.
+
+        <pattern>
+          * - Match words with any character at this position.
+          A - Match words with an 'A' at this position.
+          a - Match words with an 'A' NOT at this position.
+
+    EXAMPLE
+      wordlebuddy list r*O*T
+        # List words that have 'O' in the middle, end in 'T', and
+        # contain an 'R' but don't start with it.
 
 # Thanks
 - [Wordle](https://powerlanguage.co.uk/wordle/) for a fun game.
