@@ -54,7 +54,7 @@ class Solver
 
     method choose_word( solutions:WordList, disambiguations:WordList )->String
       if (solutions.count == 1)
-        println "The word is"
+        Console.input( "Press RETURN to see the answer > " )
         return "$ $" (solutions.first,solutions.first.to_uppercase)
       endIf
 
