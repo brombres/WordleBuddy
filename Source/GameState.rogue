@@ -1,0 +1,184 @@
+class GameState
+  PROPERTIES
+    solution          : String
+    candidates        = MainDictionary.cloned : WordList
+    known_letters     = Letters()
+    incorrect_letters = Letters()
+
+    solutions         = WordList()
+    disambiguations   = WordList()
+    worklist          = WordList()
+
+  METHODS
+    method init( &unknown_solution )
+      if (not unknown_solution) solution = candidates.random
+
+    method refine_candidates( word:String, score:String )
+      local guess_letters = Letters()
+
+      forEach (ch at i in word)
+        guess_letters.include( ch )
+        if (score[i].is_letter)
+          guess_letters.add( ch )
+          known_letters.add( ch )
+          if (score[i] == ch.to_uppercase)
+            candidates.discard( (word) with (i,ch) => word[i] != ch )
+          elseIf (score[i] == ch.to_lowercase)
+            candidates.discard( (word) with (i,ch) => word[i] == ch )
+          endIf
+        endIf
+      endForEach
+
+      # Misses and misplacements are a little tricky because multiple
+      # copies of a letter can have a different status in different
+      # spots. For example if the solution is EAVES and the guess is
+      # EERIE, the first E is correct, the second E is misplaced, and
+      # the final E is incorrect.
+      forEach (ch in guess_letters)
+        local match_count = guess_letters.count( ch )
+        if (match_count == 0)
+          # No matches to this letter. Filter out all words containing it.
+          if (not incorrect_letters.contains(ch)) incorrect_letters.add( ch )
+          candidates.discard( (word) with (ch) => word.contains(ch) )
+        else
+          local n = word.count(ch)  # will be >= match_count
+          if (n > match_count)
+            # We know for sure that the word only contains 'match_count' # of 'ch'.
+            # Filter out words with more than 'match_count' occurrences of 'ch'.
+            candidates.discard( (word) with (ch,match_count) => word.count(ch) != match_count )
+          else
+            # We know the word has at least 'match_count' occurrences of 'ch'.
+            # Filter out words with fewer occurrences.
+            candidates.discard( (word) with (ch,match_count) => word.count(ch) < match_count )
+          endIf
+        endIf
+      endForEach
+
+    method solution_recommendations->WordList
+      solutions.clear
+      if (candidates.count <= 15)
+        solutions.add( candidates )
+        return solutions
+      endIf
+
+      # Find words that use only untried letters as much as possible
+      worklist.clear
+      worklist.add( candidates )
+
+      local untried_letters = candidates.letters             # Start with all letters that might be part of the solution
+      untried_letters.remove( forEach in known_letters )     # Remove letters we know are part of the solution
+      untried_letters.add( known_letters )                   # Add them again so that they're at the end
+
+      solutions.clear
+      gather_recommendations( untried_letters, solutions, &min=15 )
+      if (solutions.count < 15)
+        gather_recommendations( untried_letters, solutions, &min=15, &allow_duplicates )
+      endIf
+
+      solutions.shuffle
+      solutions.discard_from( 15 )
+      solutions.sort( (a,b) => (a < b) )
+      return solutions
+
+    method disambiguation_recommendations->WordList
+      local untried_letters = candidates.letters             # Start with all letters that might be part of the solution
+      untried_letters.remove( forEach in known_letters )     # Remove letters we know are part of the solution
+
+      # Find words that use only untried letters as much as possible
+      worklist.clear
+      worklist.add( MainDictionary )
+
+      disambiguations.clear
+      forEach (n in 15 downTo 1)
+        gather_recommendations( untried_letters, disambiguations, &min=n )
+        if (disambiguations.count >= n) escapeForEach
+        gather_recommendations( untried_letters, disambiguations, &min=n, &allow_duplicates )
+        if (disambiguations.count) escapeForEach
+      endForEach
+
+      if (disambiguations.is_empty)
+        untried_letters.add( known_letters )  # Add known letters back in at the end as a last resort
+        if (disambiguations.is_empty) gather_recommendations( untried_letters, disambiguations, &min=1 )
+        if (disambiguations.is_empty) gather_recommendations( untried_letters, disambiguations, &min=1, &allow_duplicates )
+      endIf
+
+      disambiguations.shuffle
+      disambiguations.discard_from( 15 )
+      disambiguations.sort( (a,b) => (a < b) )
+
+      return disambiguations
+
+    #method gather_recommendations( recommendations:WordList, untried_letters:Character[] )
+
+    method gather_recommendations( untried_letters:Character[], recommendations:WordList, min:Int32, &allow_duplicates )
+      forEach (n in 5..(untried_letters.count))
+        recommendations.clear
+        recommendations.add( worklist )
+        recommendations.remove_words_not_using( untried_letters, n, &=allow_duplicates )
+        if (recommendations.count >= min) escapeForEach
+      endForEach
+
+    method print_result( word:String, score:String )
+      println
+
+      forEach (i in 0..4)
+        if (i > 0) print " "
+        set_style( score[i] )
+        print "     "
+        ConsoleStyle.bg_default
+      endForEach
+      println
+
+      forEach (i in 0..4)
+        if (i > 0) print " "
+        set_style( score[i] )
+        print "  "
+        print word[i].to_uppercase
+        print "  "
+        ConsoleStyle.bg_default
+      endForEach
+      println
+
+      forEach (i in 0..4)
+        if (i > 0) print " "
+        set_style( score[i] )
+        print "     "
+        ConsoleStyle.bg_default
+      endForEach
+      println
+
+      ConsoleStyle.fg_default
+      println
+
+    method set_style( score:Character )
+      ConsoleStyle.fg_white
+      if (score.is_uppercase)     ConsoleStyle.bg_green
+      elseIf (score.is_lowercase) ConsoleStyle.bg_yellow
+      else                        ConsoleStyle.bg_dark_gray
+
+    method score_word( word:String )->String
+      local score = Dim<<Character>>(5)
+      local solution_letters = solution->Character[]
+
+      forEach (ch at i in word)
+        if (solution[i] == ch)
+          score[i] = ch.to_uppercase
+          solution_letters.remove( ch )
+        endIf
+      endForEach
+
+      forEach (ch at i in word)
+        if (solution[i] != ch)
+          if (solution_letters.contains(ch))
+            score[i] = ch.to_lowercase
+            solution_letters.remove( ch )
+          else
+            score[i] = '*'
+          endIf
+        endIf
+      endForEach
+
+      return String(score)
+
+endClass
+

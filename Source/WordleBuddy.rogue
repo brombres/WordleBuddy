@@ -7,13 +7,18 @@ $define AUTHOR  "January 6, 2022 by Abe Pralle"
 
 $requireRogue "1.12"
 
+$include "Game.rogue"
+$include "GameState.rogue"
+$include "Letters.rogue"
+$include "MainDictionary.rogue"
+$include "Solver.rogue"
 $include "WordList.rogue"
 
 uses Utility/Best
 uses Utility/CommandLineParser
 
 try
-  WordleBuddy()
+  WordleBuddy( System.command_line_arguments.cloned )
 catch (error:Error)
   Console.error.println error
   System.exit 1
@@ -26,218 +31,29 @@ class WordleBuddy
   #
   # Uses letter frequencies from here:
   #   https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
-  PROPERTIES
-    candidates      = WordList.cloned : String[]
-    recommendations = String[]
-    letters         = "eariotnslcudpmhgbfywkvxzjq"->Character[] : Character[]
-
   METHODS
-    method init
-      println @|Welcome Wordle Buddy! Let's solve a Wordle!
-               |
-               |You will be given lists of recommended words to try.
-               |You can pick a word from the list or enter any other word.
-               |Wordle Buddy keeps track of which words are still possible.
-               |
-               |A recommended word list will look like this:
-               |
-               |  1. INERT
-               |  2. INTRO
-               |  3. NITRO
-               |
-               |Enter your guess and the result that Wordle gives you in either of two ways:
-               |
-               |> 3 nI**o
-               |
-               |> nitro nI**o
-               |
-               |This specifies that your guess is "nitro" and the Wordle result is:
+    method init( args:String[] )
+      local game = false
+      local solver = false
+      if (args.contains("game"))   game = true;   args.remove("game")
+      if (args.contains("solver")) solver = true; args.remove("solver")
 
-      print_result( "nitro", "nI**o" )
+      if (args.count or (not game and not solver))
+        print_usage
+        System.exit 0
+      endIf
 
-      println @|- Use uppercase letters for correct letters in correct positions.
-               |- Use lowercase letters for correct letters in incorrect positions.
-               |- Use '*' or any non-alphabetic character for incorrect letters.
-               |- Enter 'q' to quit.
-               |
-
-      while (candidates.count > 1)
-        gather_recommendations
-
-        println "$ of $ remaining possibilities"(recommendations.count,candidates.count)
-        println
-        forEach (rec at i in recommendations)
-          println "$. $" ((i+1).format("2"),rec.to_uppercase)
-        endForEach
-        println
-
-        loop
-          local input = Console.input( "> " )
-          if (input == "q" or input == "quit") return
-
-          if (input == "") nextIteration  # just show another random subset
-          if (accept_input(input)) escapeLoop
-        endLoop
-      endWhile
-
-      if (candidates.count == 1)
-        println "The word is"
-        local word = candidates.first.to_uppercase
-        print_result( word, word )
+      if (game)
+        Game(&=solver).play
       else
-        println "Unable to find a solution."
-        println "Either there was an input error or the Wordle Buddy word list is out of date."
+        Solver().play
       endIf
 
-    method accept_input( input:String )->Logical
-      local word   = input.before_first(' ')
-      local result = input.after_first(' ')
-
-      if (word.count <= 2)
-        local n = word->Int32
-        if (n >= 1 and n <= recommendations.count) word = recommendations[ n - 1 ]
-      endIf
-
-      if (word.to_uppercase == result)
-        candidates.clear
-        candidates.add( word )
-        return true
-      endIf
-
-      if (word.count != 5)
-        println "Your guess must be a number 1..$ or a 5-letter word." (recommendations.count)
-        return false
-      elseIf (result.count != 5)
-        println "The result must be 5 characters."
-        return false
-      endIf
-
-      word .= to_lowercase
-      print_result( word, result )
-
-      filter_candidates( word, result )
-
-      return true
-
-    method filter_candidates( word:String, result:String )
-      local unique_count = Table<<Character,Int32>>()
-      unique_count[ forEach in word ] = 0
-
-      forEach (ch at i in word)
-        if (result[i] == ch.to_uppercase)
-          ++unique_count[ch]
-          candidates.discard( (word) with (i,ch) => word[i] != ch )
-        elseIf (result[i] == ch.to_lowercase)
-          ++unique_count[ch]
-          candidates.discard( (word) with (i,ch) => word[i] == ch )
-        endIf
-      endForEach
-
-      # Misses and misplacements are a little tricky because multiple
-      # copies of a letter can have a different status in different
-      # spots. For example if the solution is EAVES and the guess is
-      # EERIE, the first E is correct, the second E is misplaced, and
-      # the final E is incorrect.
-      forEach (ch in unique_count.keys)
-        local match_count = unique_count[ch]
-        if (match_count == 0)
-          # No matches to this letter. Filter out all words containing it.
-          letters.remove( ch )
-          candidates.discard( (word) with (ch) => word.contains(ch) )
-        else
-          local n = word.count(ch)  # will be >= match_count
-          if (n > match_count)
-            # We know for sure that the word only contains 'match_count' # of 'ch'.
-            # Filter out words with more than 'match_count' occurrences of 'ch'.
-            candidates.discard( (word) with (ch,match_count) => word.count(ch) != match_count )
-          else
-            # We know the word has at least 'match_count' occurrences of 'ch'.
-            # Filter out words with fewer occurrences.
-            candidates.discard( (word) with (ch,match_count) => word.count(ch) < match_count )
-          endIf
-        endIf
-      endForEach
-
-    method gather_recommendations
-      if (candidates.count <= 15)
-        recommendations = candidates.cloned
-
-      else
-        local best = Best<<Int32,Int32>>( (a,b) => (a>=15 and (a<b or b<15)) or (a<15 and a>b) )
-        local allow_multi = false
-        loop 2
-          forEach (n in 1..letters.count)
-            gather_untried_recommendations( n, &=allow_multi )
-            if (recommendations.count) best.consider( n, recommendations.count )
-          endForEach
-          if (best.exists) escapeLoop
-          allow_multi = true
-        endLoop
-
-        if (best.exists)
-          gather_untried_recommendations( best.value, &=allow_multi )
-          recommendations.shuffle
-          recommendations.discard_from( 15 )
-          recommendations.sort( (a,b) => (a<b) )
-        endIf
-      endIf
-
-      local used_letters = Set<<Character>>()
-      used_letters.add( forEach in (forEach in recommendations) )
-      forEach (ch in used_letters)
-        letters.remove( ch )
-        letters.add( ch )
-      endForEach
-
-    method gather_untried_recommendations( using_next:Int32, &allow_multi )
-      recommendations.clear
-      forEach (word in candidates)
-        local n = 0
-        forEach (i in 0..<using_next)
-          local ch = letters[i]
-          local count = word.count(ch)
-          if (count == 1 or (count > 1 and allow_multi)) n += count
-        endForEach
-        if (n == 5) recommendations.add( word )
-      endForEach
-
-    method print_result( word:String, result:String )
-      println
-
-      forEach (i in 0..4)
-        if (i > 0) print " "
-        set_style( result[i] )
-        print "     "
-        ConsoleStyle.bg_default
-      endForEach
-      println
-
-      forEach (i in 0..4)
-        if (i > 0) print " "
-        set_style( result[i] )
-        print "  "
-        print word[i].to_uppercase
-        print "  "
-        ConsoleStyle.bg_default
-      endForEach
-      println
-
-      forEach (i in 0..4)
-        if (i > 0) print " "
-        set_style( result[i] )
-        print "     "
-        ConsoleStyle.bg_default
-      endForEach
-      println
-
-      ConsoleStyle.fg_default
-      println
-
-    method set_style( result:Character )
-      ConsoleStyle.fg_white
-      if (result.is_uppercase)     ConsoleStyle.bg_green
-      elseIf (result.is_lowercase) ConsoleStyle.bg_yellow
-      else                         ConsoleStyle.bg_dark_gray
+    method print_usage
+      println @|USAGE
+               |  wordlebuddy game
+               |  wordlebuddy solver
+               |  wordlebuddy solver game
 
 endClass
 

@@ -1,0 +1,104 @@
+class Solver
+  PROPERTIES
+    gamestate = GameState( &unknown_solution )
+
+  METHODS
+    method play
+      println @|Welcome Wordle Buddy! Let's solve a Wordle!
+               |
+               |You will be given lists of recommended words to try.
+               |You can pick a word from the list or enter any other word.
+               |Wordle Buddy keeps track of which words are still possible.
+               |
+               |The list of recommended words is numbered:
+               |
+               |  1. INERT
+               |  2. INTRO
+               |  3. NITRO
+               |
+      println @|Enter your guess and the result that Wordle gives you in either of two ways:
+               |
+               |> 3 nI**o
+               |
+               |> nitro nI**o
+               |
+               |This specifies that your guess is "nitro" and the Wordle result is:
+
+      gamestate.print_result( "nitro", "nI**o" )
+
+      println @|- Use uppercase letters for correct letters in correct positions.
+               |- Use lowercase letters for correct letters in incorrect positions.
+               |- Use '*' or any non-alphabetic character for incorrect letters.
+               |- Enter 'q' to quit.
+
+      gamestate.print_result( "?????", "*****" )
+      local guesses = 0
+      loop
+        local input = choose_word(
+          gamestate.solution_recommendations,
+          gamestate.disambiguation_recommendations
+        )
+        if (not input) nextIteration
+
+        local word = input.before_first(' ')
+        local score = input.after_first(' ')
+
+        ++guesses
+        gamestate.print_result( word, score )
+        if (word.to_uppercase == score) escapeLoop
+
+        gamestate.refine_candidates( word, score )
+      endLoop
+
+      println "Solved in # guess".pluralized(guesses)
+
+    method choose_word( solutions:WordList, disambiguations:WordList )->String
+      if (solutions.count == 1)
+        println "The word is"
+        return "$ $" (solutions.first,solutions.first.to_uppercase)
+      endIf
+
+      local max = solutions.count.or_larger( disambiguations.count )
+
+      local header = "$/$ Possibilities"(solutions.count,gamestate.candidates.count).left_justified(24)
+      header += "Disambiguations"
+      println header
+      forEach (i in 0..<max)
+        local left="", right="" : String
+        if (i < solutions.count) left = "$. $" ((i+1).format("2"),solutions[i].to_uppercase)
+        if (i < disambiguations.count) right = "$. $" ((i+solutions.count+1).format("2"),disambiguations[i].to_uppercase)
+        left .= left_justified(24)
+        println left + right
+      endForEach
+
+      println "Enter your next guess and the Wordle result."
+      local input = Console.input( "> " )
+      if (input == "q" or input == "quit") System.exit
+
+      if (input == "") return null
+      local word  = input.before_first(' ')
+      local score = input.after_first(' ')
+
+      if (word.count <= 2)
+        local n = word->Int32
+        if (n >= 1 and n <= solutions.count)
+          word = solutions[ n - 1 ]
+        else
+          n -= solutions.count
+          if (n >= 1 and n <= disambiguations.count) word = disambiguations[ n - 1 ]
+        endIf
+      endIf
+
+      if (word.count != 5)
+        println "Your guess must be a number 1..$ or a 5-letter word." (solutions.count + disambiguations.count)
+        return null
+
+      elseIf (score.count != 5)
+        println "Word and result expected; the result must be 5 characters."
+        return null
+      endIf
+
+      return "$ $"(word,score)
+
+endClass
+

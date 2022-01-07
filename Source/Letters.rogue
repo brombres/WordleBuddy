@@ -1,0 +1,36 @@
+class Letters : Character[]
+  PROPERTIES
+    occurrences = Dim<<Int32>>(26)
+
+  METHODS
+    method init
+      noAction
+
+    method init( text:String )
+      add( forEach in text )
+
+    method add( ch:Character )
+      ch .= to_lowercase
+      if (ch.is_lowercase)
+        if (not this.contains(ch)) prior.add( ch )
+        ++occurrences[ch-'a']
+      endIf
+
+    method count( ch:Character )->Int32
+      ch .= to_lowercase
+      if (ch.is_lowercase)
+        return occurrences[ch-'a']
+      else
+        return 0
+      endIf
+
+    method include( ch:Character )
+      ch .= to_lowercase
+      if (ch.is_lowercase)
+        if (not this.contains(ch)) prior.add( ch )
+      endIf
+
+    method sort
+      ShakerSort<<Character>>.sort( this, (a,b) with (THIS=this) => (THIS.count(a) > THIS.count(b)) )
+endClass
+
