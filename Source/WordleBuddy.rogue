@@ -2,7 +2,7 @@
 # WordleBuddy.rogue
 # January 5, 2022
 #================================================================================
-$define VERSION "Wordle Buddy v1.3"
+$define VERSION "Wordle Buddy v1.4"
 $define AUTHOR  "January 7, 2022 by Abe Pralle"
 
 $requireRogue "1.12"
