@@ -7,6 +7,7 @@ $define AUTHOR  "January 7, 2022 by Abe Pralle"
 
 $requireRogue "1.12"
 
+#$include "ExtendedDictionary.rogue"
 $include "Game.rogue"
 $include "GameState.rogue"
 $include "Letters.rogue"
@@ -28,9 +29,6 @@ class WordleBuddy
   # Uses "official" Wordle word lists courtesy of twitch.tv/graham
   #   https://observablehq.com/@iamgrahamallen/wordle-solver-exploration
   #   https://observablehq.com/@iamgrahamallen/wordle-solver-exploration-part-2
-  #
-  # Uses letter frequencies from here:
-  #   https://www3.nd.edu/~busiforc/handouts/cryptography/letterfrequencies.html
   METHODS
     method init( args:String[] )
       local command = parse_args( args )
