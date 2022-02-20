@@ -2,8 +2,8 @@
 
 Summary   | Current Release
 ----------|-----------------------
-Version   | 1.4
-Date      | January 7, 2022
+Version   | 1.4.1
+Date      | February 19, 2022
 Platforms | macOS, Linux (Ubuntu+), Windows
 Author    | Abe Pralle
 
