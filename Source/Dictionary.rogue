@@ -1,0 +1,11 @@
+class Dictionary : WordList [singleton]
+  METHODS
+    method init
+      localize words
+      reserve( 3500 )
+      add( forEach in LineReader(words) )
+
+    method words->String
+      throw UnsupportedOperationError()
+endClass
+

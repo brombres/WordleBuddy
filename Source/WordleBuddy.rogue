@@ -7,7 +7,8 @@ $define AUTHOR  "February 19, 2022 by Abe Pralle"
 
 $requireRogue "1.12"
 
-#$include "ExtendedDictionary.rogue"
+$include "Dictionary.rogue"
+$include "ExtendedDictionary.rogue"
 $include "Game.rogue"
 $include "GameState.rogue"
 $include "Letters.rogue"
@@ -29,6 +30,9 @@ class WordleBuddy
   # Uses "official" Wordle word lists courtesy of twitch.tv/graham
   #   https://observablehq.com/@iamgrahamallen/wordle-solver-exploration
   #   https://observablehq.com/@iamgrahamallen/wordle-solver-exploration-part-2
+  GLOBAL PROPERTIES
+    use_extended_word_list = false
+
   METHODS
     method init( args:String[] )
       local command = parse_args( args )
@@ -61,6 +65,19 @@ class WordleBuddy
 
     method parse_args( args:String[] )->Value
       contingent
+        if (args.contains("--extended"))
+          args.remove( "--extended" )
+          use_extended_word_list = true
+        endIf
+
+        if (args.contains("-e"))
+          args.remove( "-e" )
+          use_extended_word_list = true
+        endIf
+
+        if (use_extended_word_list) Dictionary = ExtendedDictionary()
+        else                        Dictionary = MainDictionary()
+
         necessary (args.count)
 
         if (args.first == "list")
@@ -104,11 +121,19 @@ class WordleBuddy
       println AUTHOR
       println
       println @|USAGE
-               |  wordlebuddy solver
-               |  wordlebuddy game
-               |  wordlebuddy game solver
-               |  wordlebuddy list <pattern>
-               |  wordlebuddy list <pattern> containing <letters>
+               |  wordlebuddy [OPTIONS] solver
+               |  wordlebuddy [OPTIONS] game
+               |  wordlebuddy [OPTIONS] game solver
+               |  wordlebuddy [OPTIONS] list <pattern>
+               |  wordlebuddy [OPTIONS] list <pattern> containing <letters>
+               |
+               |OPTIONS
+               |  --extended, -e
+               |    Use the extended word list. Wordle chooses solutions from a smaller word
+               |    and includes an extended list of uncommon words that are valid guesses.
+               |    The --extended option directs Wordle Buddy to use the extended word list
+               |    as possible solutions. "Dordle" seems to pick at least some solutions
+               |    from the extended list.
                |
                |DESCRIPTION
                |  wordlebuddy solver

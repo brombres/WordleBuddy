@@ -1,9 +1,5 @@
-class MainDictionary : WordList [singleton]
+class ExtendedDictionary : Dictionary
   METHODS
-    method init
-      reserve( 13000 )
-      add( forEach in LineReader(words) )
-
     method words->String
       return ...
        @|aahed

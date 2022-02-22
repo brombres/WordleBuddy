@@ -1,9 +1,5 @@
-class MainDictionary : WordList [singleton]
+class MainDictionary : Dictionary
   METHODS
-    method init
-      reserve( 2400 )
-      add( forEach in LineReader(words) )
-
     method words->String
       return ...
        @|aback
@@ -1677,7 +1673,6 @@ class MainDictionary : WordList [singleton]
         |scold
         |scone
         |scoop
-        |scoot
         |scope
         |score
         |scorn
