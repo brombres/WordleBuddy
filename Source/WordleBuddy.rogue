@@ -97,6 +97,25 @@ class WordleBuddy
           return result
         endIf
 
+        if (args.first == "variations" or args.first == "v")
+          necessary (args.count == 2)
+          local letters = args[1]
+          local pattern = Character[]
+          pattern.add( forEach in letters)
+          forEach (i in 0..<pattern.permutation_count)
+            contingent
+              local permutation = String( pattern.permutation(i) )
+              forEach (ch at i2 in letters)
+                if (ch.is_uppercase)
+                  necessary (permutation[i2] == ch)
+                endIf
+              endForEach
+              println permutation.to_uppercase
+            endContingent
+          endForEach
+          System.exit
+        endIf
+
         local result = @{}
         if (args.contains("game"))
           args.remove( "game" )
@@ -126,6 +145,7 @@ class WordleBuddy
                |  wordlebuddy [OPTIONS] game solver
                |  wordlebuddy [OPTIONS] list <pattern>
                |  wordlebuddy [OPTIONS] list <pattern> containing <letters>
+               |  wordlebuddy variations/v letters
                |
                |OPTIONS
                |  --extended, -e
@@ -157,6 +177,9 @@ class WordleBuddy
                |    Lists words matching the pattern (which can be "*****") AND
                |    containing all the given letters.
                |
+               |  wordlebuddy variations <pattern>, wordlebuddy v <pattern>
+               |    Lists all possible variations (permutations) of the given lowercase letters.
+               |    Uppercase letters are locked in place.
                |
                |EXAMPLES
                |  wordlebuddy list "r*O*T"
