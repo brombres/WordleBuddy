@@ -12,7 +12,8 @@ class WordList : String[]
 
     method letters->Character[]
       # Returns frequency-ranked letters
-      local letter_counts = Dim<<LetterCount>>( 26, (i)=>LetterCount('a'+i) )
+      local letter_counts = Dim<<LetterCount>>( 26 )
+      forEach (i in 0..25) letter_counts[i] = LetterCount('a'+i)
       forEach (ch in (forEach in this))
         local i = ch - 'a'
         letter_counts[i] .= incremented

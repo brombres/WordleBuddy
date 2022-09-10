@@ -62,14 +62,14 @@ class Solver
 
       local max = solutions.count.or_larger( disambiguations.count )
 
-      local header = "$/$ Possibilities"(solutions.count,gamestate.candidates.count).left_justified(24)
+      local header = "$/$ Possibilities"(solutions.count,gamestate.candidates.count).justified(-24)
       header += "Disambiguations"
       println header
       forEach (i in 0..<max)
         local left="", right="" : String
         if (i < solutions.count) left = "$. $" ((i+1).format("2"),solutions[i].to_uppercase)
         if (i < disambiguations.count) right = "$. $" ((i+solutions.count+1).format("2"),disambiguations[i].to_uppercase)
-        left .= left_justified(24)
+        left .= justified(-24)
         println left + right
       endForEach
 

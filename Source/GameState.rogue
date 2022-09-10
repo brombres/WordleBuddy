@@ -21,24 +21,24 @@ class GameState
       forEach (ch in 'a'..'z')
         if (ch > 'a') print ' '
         if (fixed_letters.contains(ch))
-          ConsoleStyle.fg_white
-          ConsoleStyle.bg_green
+          ConsoleStyle.set<<FG_WHITE>>
+          ConsoleStyle.set<<BG_GREEN>>
           print ch.to_uppercase
         elseIf (known_letters.contains(ch))
-          ConsoleStyle.fg_black
-          ConsoleStyle.bg_yellow
+          ConsoleStyle.set<<FG_BLACK>>
+          ConsoleStyle.set<<BG_YELLOW>>
           print ch.to_uppercase
         elseIf (incorrect_letters.contains(ch))
           print " "
         else
-          ConsoleStyle.fg_default
-          ConsoleStyle.bg_default
+          ConsoleStyle.set<<FG_DEFAULT>>
+          ConsoleStyle.set<<BG_DEFAULT>>
           print ch.to_uppercase
         endIf
-        ConsoleStyle.bg_default
+        ConsoleStyle.set<<BG_DEFAULT>>
       endForEach
       println
-      ConsoleStyle.fg_default
+      ConsoleStyle.set<<FG_DEFAULT>>
 
     method refine_candidates( word:String, score:String )
       local guess_letters = Letters()
@@ -153,7 +153,7 @@ class GameState
         if (i > 0) print " "
         set_style( score[i] )
         print "     "
-        ConsoleStyle.bg_default
+        ConsoleStyle.set<<BG_DEFAULT>>
       endForEach
       println
 
@@ -163,7 +163,7 @@ class GameState
         print "  "
         print word[i].to_uppercase
         print "  "
-        ConsoleStyle.bg_default
+        ConsoleStyle.set<<BG_DEFAULT>>
       endForEach
       println
 
@@ -171,18 +171,18 @@ class GameState
         if (i > 0) print " "
         set_style( score[i] )
         print "     "
-        ConsoleStyle.bg_default
+        ConsoleStyle.set<<BG_DEFAULT>>
       endForEach
       println
 
-      ConsoleStyle.fg_default
+      ConsoleStyle.set<<FG_DEFAULT>>
       println
 
     method set_style( score:Character )
-      ConsoleStyle.fg_white
-      if (score.is_uppercase)     ConsoleStyle.bg_green
-      elseIf (score.is_lowercase) ConsoleStyle.bg_yellow
-      else                        ConsoleStyle.bg_dark_gray
+      ConsoleStyle.set<<FG_WHITE>>
+      if (score.is_uppercase)     ConsoleStyle.set<<BG_GREEN>>
+      elseIf (score.is_lowercase) ConsoleStyle.set<<BG_YELLOW>>
+      else                        ConsoleStyle.set<<BG_DARK_GRAY>>
 
     method score_word( word:String )->String
       local score = Dim<<Character>>(5)

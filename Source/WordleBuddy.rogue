@@ -2,10 +2,10 @@
 # WordleBuddy.rogue
 # January 5, 2022
 #================================================================================
-$define VERSION "Wordle Buddy v1.5"
-$define AUTHOR  "February 22, 2022 by Abe Pralle"
+$define VERSION "1.5"
+$define DATE    "February 22, 2022"
 
-$requireRogue "1.12"
+$requireRogue "2.0.8"
 
 $include "Dictionary.rogue"
 $include "ExtendedDictionary.rogue"
@@ -85,7 +85,7 @@ class WordleBuddy
           local pattern = args[1]
           if (pattern.count != 5)
             println ''Pattern must contain 5 characters; "$" contains $ characters.''(pattern,pattern.count)
-            return UndefinedValue
+            return undefined
           endIf
 
           local result = @{ list:true, :pattern }
@@ -131,13 +131,13 @@ class WordleBuddy
         return result
 
       unsatisfied
-        return UndefinedValue
+        return undefined
 
       endContingent
 
     method print_usage
-      println VERSION
-      println AUTHOR
+      println "WordleBuddy v$"(VERSION)
+      println "$ by Abe Pralle"(DATE)
       println
       println @|USAGE
                |  wordlebuddy [OPTIONS] solver
