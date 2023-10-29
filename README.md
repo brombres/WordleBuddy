@@ -5,7 +5,7 @@ Summary   | Current Release
 Version   | 2.0
 Date      | September 9, 2022
 Platforms | macOS, Linux (Ubuntu+), Windows
-Author    | Abe Pralle
+Author    | Brom Bresenham
 
 # About
 Wordle Buddy is a console-based app that assists in solving [Wordle](https://powerlanguage.co.uk/wordle/) puzzles.
@@ -18,7 +18,7 @@ Wordle Buddy is a console-based app that assists in solving [Wordle](https://pow
 ## New Installation
 
 1. Install [morlock.sh](https://morlock.sh)
-2. `morlock install abepralle/wordlebuddy`
+2. `morlock install brombres/wordlebuddy`
 
 ## Updating Existing Installation
     morlock update wordlebuddy

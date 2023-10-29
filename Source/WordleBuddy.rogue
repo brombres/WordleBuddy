@@ -137,7 +137,7 @@ class WordleBuddy
 
     method print_usage
       println "WordleBuddy v$"(VERSION)
-      println "$ by Abe Pralle"(DATE)
+      println "$ by Brom Bresenham"(DATE)
       println
       println @|USAGE
                |  wordlebuddy [OPTIONS] solver
